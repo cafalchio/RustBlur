@@ -1,5 +1,2 @@
 /target
-src/*.jpg
-./../*.jpg
-./../../*.jpg
-../*.jpg
+*.jpg
