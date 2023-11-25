@@ -1,4 +1,6 @@
-use image::{DynamicImage, GenericImageView, ImageBuffer, Rgba};
+use image::GenericImageView;
+use image::{DynamicImage, ImageBuffer, Rgba};
+use rayon::{prelude::*, ThreadPoolBuilder};
 use std::env;
 use std::fmt;
 use std::time::{Duration, Instant};
@@ -79,8 +81,32 @@ fn main() {
     let (width, height) = img.dimensions();
     let mut output: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::new(width, height);
 
-    for (x, y, pixel) in img.pixels() {
-        output.put_pixel(x, y, apply_box_kernel(pixel, &img, x, y, kernel_size));
+    let num_threads = 12; // Set the number of threads
+    let _thread_pool = ThreadPoolBuilder::new()
+        .num_threads(num_threads)
+        .build()
+        .unwrap();
+
+    // output.enumerate_pixels_mut().for_each(|(x, y, pixel)| {
+    //     *pixel = apply_box_kernel(*pixel, &img, x, y, kernel_size);
+    // });
+
+    let pixels: Vec<Rgba<u8>> = img.pixels().map(|(_, _, pixel)| pixel).collect();
+
+    let processed_pixels: Vec<Rgba<u8>> = pixels
+        .par_iter()
+        .enumerate()
+        .map(|(index, pixel)| {
+            let x = index as u32 % width;
+            let y = index as u32 / width;
+            apply_box_kernel(*pixel, &img, x, y, kernel_size)
+        })
+        .collect();
+
+    for (index, pixel) in processed_pixels.into_iter().enumerate() {
+        let x = index as u32 % width;
+        let y = index as u32 / width;
+        output.put_pixel(x, y, pixel);
     }
 
     output.save(out_path).unwrap();
