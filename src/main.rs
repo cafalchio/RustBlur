@@ -1,6 +1,6 @@
 use image::GenericImageView;
 use image::{DynamicImage, ImageBuffer, Rgba};
-use rayon::{prelude::*, ThreadPoolBuilder};
+use rayon::prelude::*;
 use std::env;
 use std::fmt;
 use std::time::{Duration, Instant};
@@ -80,18 +80,9 @@ fn main() {
     let img: DynamicImage = image::open(file_path).expect("File not found!");
     let (width, height) = img.dimensions();
     let mut output: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::new(width, height);
-
-    let num_threads = 12; // Set the number of threads
-    let _thread_pool = ThreadPoolBuilder::new()
-        .num_threads(num_threads)
-        .build()
-        .unwrap();
-
-    // output.enumerate_pixels_mut().for_each(|(x, y, pixel)| {
-    //     *pixel = apply_box_kernel(*pixel, &img, x, y, kernel_size);
-    // });
-
     let pixels: Vec<Rgba<u8>> = img.pixels().map(|(_, _, pixel)| pixel).collect();
+
+    // .par_iter -> paralel processing from rayon
 
     let processed_pixels: Vec<Rgba<u8>> = pixels
         .par_iter()
