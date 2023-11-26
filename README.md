@@ -42,6 +42,6 @@ Once the program finishes, the blurred image will be saved at the specified `<ou
 - Ensure the input image exists at the provided path and that you have write permissions for the specified output path.
 ---
 
-### Warning
+#### Warning
 
 The image border was not taken in consideration. so "half of kernel size pixels" in the border will be kept as original;
